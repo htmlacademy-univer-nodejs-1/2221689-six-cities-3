@@ -17,6 +17,7 @@ export class TSVFileReader implements FileReader {
         if (!this.rawData) {
             throw new Error('File was not read')
         }
+        
 
         return this.rawData
             .split('\n')
@@ -39,7 +40,7 @@ export class TSVFileReader implements FileReader {
                     price: Number.parseInt(price.replace(/\s/g, ""), 10),
                     conveniences: conveniences.split(';')
                         .map((convenience) => convenience as Convenience),
-                    authorOffer: { name, email, avatarPath, password, type: userType as UserType },
+                    authorOffer: { name, email, avatarPath, password, type: UserType[userType.replace('\r', '') as keyof typeof UserType] },
                     commentsCount: Number.parseInt(commentsCount, 10),
                     coordinats: [Number.parseFloat(coordinats.split(';')[0]), Number.parseFloat(coordinats.split(';')[1])]
                 }));
