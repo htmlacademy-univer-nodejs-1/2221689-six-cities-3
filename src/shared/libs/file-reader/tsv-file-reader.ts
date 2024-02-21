@@ -33,7 +33,7 @@ export class TSVFileReader implements FileReader {
                     premium: Boolean(premium),
                     favorite: Boolean(favorite),
                     rating: Number.parseInt(rating, 10),
-                    type: HousingType[type as 'Apartment' | 'House' | 'Room' | 'Hotel'],
+                    type: type as HousingType,
                     roomsCount: Number.parseInt(roomsCount, 10),
                     guestsCount: Number.parseInt(guestsCount, 10),
                     price: Number.parseInt(price.replace(/\s/g, ""), 10),
@@ -41,7 +41,7 @@ export class TSVFileReader implements FileReader {
                         .map((convenience) => convenience as Convenience),
                     authorOffer: { name, email, avatarPath, password, type: userType as UserType },
                     commentsCount: Number.parseInt(commentsCount, 10),
-                    coordinats: [coordinats.split(';')[0], coordinats.split(';')[1]]
+                    coordinats: [Number.parseFloat(coordinats.split(';')[0]), Number.parseFloat(coordinats.split(';')[1])]
                 }));
     }
 }

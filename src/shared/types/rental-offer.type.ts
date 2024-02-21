@@ -19,5 +19,5 @@ export type RentalOffer = {
    conveniences: Convenience[];
    authorOffer: User;
    commentsCount: number;
-   coordinats: [string, string]
+   coordinats: [number, number]
 }
