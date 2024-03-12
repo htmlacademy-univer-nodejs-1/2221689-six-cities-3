@@ -7,6 +7,7 @@ export class ImportCommand implements Command {
   public getName(): string {
     return '--import';
   }
+
   private onImportedLine(line: string) {
     const offer = createRentalOffer(line);
     console.info(offer);
