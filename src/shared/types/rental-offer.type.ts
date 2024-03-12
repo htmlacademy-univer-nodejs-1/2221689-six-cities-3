@@ -1,6 +1,6 @@
-import { Convenience } from "./convenience.enum.js";
-import { HousingType } from "./housing-type.enum.js";
-import { User } from "./user.type.js";
+import { Convenience } from './convenience.enum.js';
+import { HousingType } from './housing-type.enum.js';
+import { User } from './user.type.js';
 
 export type RentalOffer = {
    title: string;
