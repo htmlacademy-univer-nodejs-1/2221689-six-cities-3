@@ -7,8 +7,8 @@ export class CLIApplication {
   private commands: CommandCollection = {};
 
   constructor(
-        private readonly defaultCommand: string = '--help'
-  ) {}
+    private readonly defaultCommand: string = '--help'
+  ) { }
 
   public getCommand(commandName: string): Command {
     return this.commands[commandName] ?? this.getDefaultCommand();
