@@ -1,6 +1,6 @@
-import { Ref, defaultClasses, getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
-import { Convenience, HousingType } from "../../types/index.js";
-import { UserEntity } from "../user/index.js";
+import { Ref, defaultClasses, getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
+import { Convenience, HousingType } from '../../types/index.js';
+import { UserEntity } from '../user/index.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export interface RentalOfferEntity extends defaultClasses.Base {}
@@ -14,7 +14,7 @@ export interface RentalOfferEntity extends defaultClasses.Base {}
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class RentalOfferEntity extends defaultClasses.TimeStamps {
     @prop({ required: true, trim: true, type: () => String })
-    public title: string;
+  public title: string;
 
     @prop({ required: true, trim: true, type: () => String })
     public description: string;
@@ -41,9 +41,9 @@ export class RentalOfferEntity extends defaultClasses.TimeStamps {
     public rating: number;
 
     @prop({
-        required: true,
-        type: () => String,
-        enum: HousingType
+      required: true,
+      type: () => String,
+      enum: HousingType
     })
     public type: HousingType;
 
@@ -56,15 +56,15 @@ export class RentalOfferEntity extends defaultClasses.TimeStamps {
     @prop({ required: true, type: () => Number })
     public price: number;
 
-    @prop({ 
-        required: true, 
-        type: () => Array<Convenience>
-     })
+    @prop({
+      required: true,
+      type: () => Array<Convenience>
+    })
     public conveniences: Convenience[];
 
     @prop({
-        ref: UserEntity,
-        required: true
+      ref: UserEntity,
+      required: true
     })
     public authorOfferId: Ref<UserEntity>;
 
@@ -72,7 +72,7 @@ export class RentalOfferEntity extends defaultClasses.TimeStamps {
     public commentsCount: number;
 
     @prop({ required: true, type: () => Array<number> })
-    public coordinats: [number, number]
+    public coordinats: [number, number];
 }
 
 export const RentalOfferModel = getModelForClass(RentalOfferEntity);

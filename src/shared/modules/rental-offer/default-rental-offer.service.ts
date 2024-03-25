@@ -1,8 +1,8 @@
-import { inject, injectable } from "inversify";
-import { Component } from "../../types/index.js";
-import { CreateRentalOfferDto, RentalOfferEntity, RentalOfferService } from "./index.js";
-import { Logger } from "../../libs/logger/index.js";
-import { DocumentType, types } from "@typegoose/typegoose";
+import { inject, injectable } from 'inversify';
+import { Component } from '../../types/index.js';
+import { CreateRentalOfferDto, RentalOfferEntity, RentalOfferService } from './index.js';
+import { Logger } from '../../libs/logger/index.js';
+import { DocumentType, types } from '@typegoose/typegoose';
 
 
 @injectable()

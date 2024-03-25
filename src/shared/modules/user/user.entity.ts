@@ -6,9 +6,9 @@ import { createSHA256 } from '../../helpers/index.js';
 export interface UserEntity extends defaultClasses.Base {}
 
 @modelOptions({
-    schemaOptions: {
-      collection: 'users'
-    }
+  schemaOptions: {
+    collection: 'users'
+  }
 })
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
@@ -25,7 +25,7 @@ export class UserEntity extends defaultClasses.TimeStamps implements User {
   @prop({ required: true, default: '', type: () => String })
   private password?: string;
 
-  @prop({ 
+  @prop({
     required: true,
     type: () => String,
     enum: UserType
