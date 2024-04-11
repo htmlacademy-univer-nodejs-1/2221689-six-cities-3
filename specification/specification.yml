@@ -1,0 +1,618 @@
+openapi: 3.0.2
+info:
+  title: API сервер для демо-проекта «Шесть городов».
+  description: |-
+    * Список ресурсов и маршрутов сервера «Шесть городов».
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  version: 2.0.0
+tags:
+  - name: offers
+    description: Действия с объявлениями.
+  - name: comments
+    description: Действия с комментариями.
+  - name: users
+    description: Действия с пользователем.
+
+paths:
+  /users/register:
+    post:
+      tags:
+        - users
+      summary: Регистрация пользователя
+      description: Регистрирует нового пользователя.
+
+      requestBody:
+        description: Информация для создания нового пользователя.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createUser"
+        required: true
+
+      responses:
+        "201":
+          description: Пользователь зарегистрирован. Объект пользователя.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        "400":
+          description: Bad Request
+        "409":
+          description: Пользователь с таким email уже существует.
+        "500":
+          description: Internal Error
+
+  /users/login:
+    post:
+      tags:
+        - users
+      summary: Авторизация пользователя
+      description: Авторизует пользователя на основе логина и пароля
+
+      requestBody:
+        description: Информация для авторизации пользователя.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/loginUser"
+        required: true
+
+      responses:
+        "201":
+          description: Пользователь авторизован. Объект пользователя.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/user"
+                  - properties:
+                      token:
+                        type: string
+
+        "400":
+          description: Bad Request
+        "401":
+          description: Логин или пароль неверный или пользователь не существует.
+        "500":
+          description: Internal Error
+
+    get:
+      tags:
+        - users
+      summary: Проверка состояния пользователя
+      description: Возвращает информацию по авторизованному пользователю
+
+      requestBody:
+        description: Токен пользователя.
+        content:
+          application/json:
+            schema:
+              properties:
+                token:
+                  type: string
+        required: true
+
+      responses:
+        "201":
+          description: Пользователь авторизован. Объект пользователя.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        "400":
+          description: Bad Request
+        "401":
+          description: Пользователь не авторизован.
+        "500":
+          description: Internal Error
+
+  /users/logout:
+    delete:
+      tags:
+        - users
+      summary: Завершение сеанса
+      description: Осуществляет завершение пользовательского сеанса
+
+      responses:
+        "204":
+          description: ОК
+
+  /offers:
+    get:
+      tags:
+        - offers
+      summary: Получение списка предложений
+      description: Возвращает список предложений по аренде
+      responses:
+        "200":
+          description: Список предложений об аренде
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/smallOffer"
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Error
+
+    post:
+      tags:
+        - offers
+      summary: Создание предложения об аренде
+      description: Создает предложение об аренде
+
+      requestBody:
+        description: Информация для создания нового предложения об аренде.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/offer"
+        required: true
+
+      responses:
+        "201":
+          description: Предложение об аренде создано. Объект предложения.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - properties:
+                      id:
+                        type: string
+                        example: "123ewaxs243qfvsd"
+                  - $ref: "#/components/schemas/offer"
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Error
+
+  /offers/{offerId}:
+    get:
+      tags:
+        - offers
+      summary: Детальная информация по предложению
+      description: Возвращает детальную информацию по предложению об аренде
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Детальная информация по предложению об аренде
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - properties:
+                      id:
+                        type: string
+                        example: "123ewaxs243qfvsd"
+                  - $ref: "#/components/schemas/offer"    
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Error
+
+    patch:
+      tags:
+        - offers
+      summary: Редактирование предложения
+      description: Редактирует предложение об аренде
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Информация для редактирования предложения об аренде.
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/offer"
+                - properties:
+                    id:
+                      type: string
+                      example: "123ewaxs243qfvsd"
+        required: true
+
+      responses:
+        "200":
+          description: Предложение об аренде отредактировано. Объект предложения.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - properties:
+                      id:
+                        type: string
+                        example: "123ewaxs243qfvsd"
+                  - $ref: "#/components/schemas/offer"
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Error
+
+    delete:
+      tags:
+        - offers
+      summary: Удаление предложения по аренде
+      description: Осуществляет удаление предложения по аренде
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: ОК
+
+  /offers/premium:
+    get:
+      tags:
+        - offers
+      summary: Премиальные предложения для города
+      description: Возвращает премиальные предложения по аренде для города
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Премиальные предложения для города
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/smallOffer"    
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Error
+  
+  /offers/favorite:
+    get:
+      tags:
+        - offers
+      summary: Список избранных предложений
+      description: Возвращает список избранных предложений по аренде
+      responses:
+        "200":
+          description: Избранные предложения по аренде
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/smallOffer"    
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Error
+
+  /offers/favorite/{offerId}:
+    post:
+      tags:
+        - offers
+      summary: Добавление предложения в избранное
+      description: Добавляет в список избранных предложение по аренде
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Предложение добавлено в избранное. Объект предложения.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/smallOffer"    
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Error
+    
+    delete:
+      tags:
+        - offers
+      summary: Удаление предложения по аренде из избранного
+      description: Осуществляет удаление предложения по аренде из избранного
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: ОК
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/smallOffer" 
+
+  /comments/{offerId}:
+    get:
+      tags:
+        - comments
+      summary: Список комментариев для предложения
+      description: Возвращает список комментариев для предложения по аренде
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Комментарии для предложения
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/comment"    
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Error 
+    
+    post:
+      tags:
+        - comments
+      summary: Добавление комментария
+      description: Добавляет в список комментариев для предложения по аренде
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      requestBody:
+        description: Информация для добавления комментария для предложения об аренде.
+        content:
+          application/json:
+            schema:
+                $ref: "#/components/schemas/comment"
+        required: true
+
+      responses:
+        "201":
+          description: Комментарий добавлен в избранное. Объект комментария.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - properties:
+                      id:
+                        type: string
+                        example: "123ewaxs243qfvsd"
+                  - $ref: "#/components/schemas/comment"    
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Error
+
+components:
+  schemas:
+    createUser:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Keks
+
+        email:
+          type: string
+          example: keks@htmlacademy.ru
+
+        avatarPath:
+          type: string
+          example: http://localhost:5000/images/avatar.jpg
+
+        type:
+          type: string
+          example: обычный
+
+        password:
+          type: string
+          example: 123456
+
+    loginUser:
+      type: object
+
+      properties:
+        email:
+          type: string
+          example: keks@htmlacademy.ru
+
+        password:
+          type: string
+          example: 123456
+
+    user:
+      type: object
+
+      properties:
+        id:
+          type: string
+          example: 6329c3d6a04ab1061c6425ea
+
+        name:
+          type: string
+          example: Keks
+
+        email:
+          type: string
+          example: keks@htmlacademy.ru
+
+        avatarPath:
+          type: string
+          example: http://localhost:5000/images/avatar.jpg
+
+        type:
+          type: string
+          example: обычный
+
+    offer:
+      type: object
+
+      properties:
+        title:
+          type: string
+          example: Солнченый бриз
+
+        description:
+          type: string
+          example: Солнченый бриз - лучшее место для отдыха
+
+        createdDate:
+          type: string
+          example: 2024-03-06T20:15:42.792Z
+
+        city:
+          type: string
+          example: Paris
+
+        previewImage:
+          type: string
+          example: preview-apartments.jpg
+
+        images:
+          type: array
+          example: [apartments-1.jpg, apartments-2.jpg]
+
+        premium:
+          type: boolean
+          example: false
+
+        favorite:
+          type: boolean
+          example: true
+
+        rating:
+          type: number
+          example: 2
+
+        type:
+          type: string
+          example: hotel
+
+        roomsCount:
+          type: number
+          example: 7
+
+        guestsCount:
+          type: number
+          example: 7
+
+        price:
+          type: number
+          example: 700
+
+        conveniences:
+          type: array
+          example: [Washer, Towels, Fridge]
+
+        authorOffer:
+          type: object
+          example:
+            {
+              name: Keks,
+              email: keks@htmlacademy.ru,
+              type: обычный
+            }
+
+        commentsCount:
+          type: number
+          example: 7
+
+        coordinats:
+          type: array
+          example: 700
+
+    smallOffer:
+      type: object
+
+      properties:
+        title:
+          type: string
+          example: Солнченый бриз
+
+        createdDate:
+          type: string
+          example: 2024-03-06T20:15:42.792Z
+
+        city:
+          type: string
+          example: Paris
+
+        previewImage:
+          type: string
+          example: preview-apartments.jpg
+
+        premium:
+          type: boolean
+          example: false
+
+        favorite:
+          type: boolean
+          example: true
+
+        rating:
+          type: number
+          example: 2
+
+        type:
+          type: string
+          example: hotel
+
+        price:
+          type: number
+          example: 700
+
+        commentsCount:
+          type: number
+          example: 7
+
+    comment:
+      type: object
+
+      properties:
+        text:
+          type: string
+          example: "Good hotel"
+
+        createdDate:
+          type: string
+          example: 2024-03-06T20:15:42.792Z
+
+        rating:
+          type: number
+          example: 2
+
+        authorOffer:
+          type: object
+          example:
+            {
+              name: Keks,
+              email: keks@htmlacademy.ru,
+              type: обычный
+            }
+        
+

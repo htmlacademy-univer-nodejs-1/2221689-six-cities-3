@@ -1,6 +1,6 @@
 import { Convenience, HousingType } from '../../../types/index.js';
 
-export class CreateRentalOfferDto {
+export class CreateOfferDto {
   title: string;
   description: string;
   createdDate: Date;

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { generateRandomValue, getRandomItem, getRandomItems } from '../../helpers/index.js';
 import { Convenience, HousingType, MockServerData, UserType } from '../../types/index.js';
-import { RentalOfferGenerator } from './rental-offer-generator.interface.js';
+import { OfferGenerator } from './offer-generator.interface.js';
 
 const MIN_RATING = 1;
 const MAX_RATING = 5;
@@ -21,7 +21,7 @@ const MAX_COMMENTS_COUNT = 500;
 const FIRST_WEEK_DAY = 1;
 const LAST_WEEK_DAY = 7;
 
-export class TSVRentalOfferGenerator implements RentalOfferGenerator {
+export class TSVOfferGenerator implements OfferGenerator {
   constructor(private readonly mockData: MockServerData) { }
   public generate(): string {
     const title = getRandomItem<string>(this.mockData.titles);
