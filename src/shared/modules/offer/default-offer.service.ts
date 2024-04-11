@@ -74,16 +74,42 @@ export class DefaultOfferService implements OfferService {
 
   public async addFavoriteById(offerId: string): Promise<DocumentType<OfferEntity> | null> {
     return this.offerModel
-    .findByIdAndUpdate(offerId, {favorite: true}, {new: true})
-    .populate('authorOfferId')
-    .exec();
+      .findByIdAndUpdate(offerId, {favorite: true}, {new: true})
+      .populate('authorOfferId')
+      .exec();
   }
 
   public async deleteFavoriteById(offerId: string): Promise<DocumentType<OfferEntity> | null> {
     return this.offerModel
-    .findByIdAndUpdate(offerId, {favorite: false}, {new: true})
-    .populate('authorOfferId')
-    .exec();
+      .findByIdAndUpdate(offerId, {favorite: false}, {new: true})
+      .populate('authorOfferId')
+      .exec();
+  }
+
+  public async updateRating(offerId: string): Promise<DocumentType<OfferEntity> | null> {
+    const newRating = await this.offerModel
+      .aggregate([
+        {
+          $lookup: {
+            from: 'comments',
+            pipeline: [
+              { $match: {offerId: offerId} },
+              { $project: { rating: 1}},
+              { $group: {
+                _id: null,
+                avg: { '$avg': '$rating' }
+              }
+              }
+            ],
+            as: 'avg'
+          },
+        },
+      ]).exec();
+
+    return this.offerModel
+      .findByIdAndUpdate(offerId, {rating: newRating[0]}, {new: true})
+      .populate('authorOfferId')
+      .exec();
   }
 
   public async exists(documentId: string): Promise<boolean> {

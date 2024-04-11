@@ -28,8 +28,8 @@ export class ImportCommand implements Command {
   }
 
   private async onImportedLine(line: string, resolve: () => void) {
-    const Offer = createOffer(line);
-    await this.saveOffer(Offer);
+    const offer = createOffer(line);
+    await this.saveOffer(offer);
     resolve();
   }
 
@@ -51,11 +51,11 @@ export class ImportCommand implements Command {
       city: offer.city,
       previewImage: offer.previewImage,
       images: offer.images,
-      premium: offer.premium,
-      favorite: Offer.favorite,
+      isPremium: offer.isPremium,
+      favorite: offer.favorite,
       rating: offer.rating,
       type: offer.type,
-      roomsCount: Oofer.roomsCount,
+      roomsCount: offer.roomsCount,
       guestsCount: offer.guestsCount,
       price: offer.price,
       conveniences: offer.conveniences,

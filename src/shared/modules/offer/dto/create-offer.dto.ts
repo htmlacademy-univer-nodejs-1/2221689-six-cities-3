@@ -7,7 +7,7 @@ export class CreateOfferDto {
   city: string;
   previewImage: string;
   images: string[];
-  premium: boolean;
+  isPremium: boolean;
   favorite: boolean;
   rating: number;
   type: HousingType;

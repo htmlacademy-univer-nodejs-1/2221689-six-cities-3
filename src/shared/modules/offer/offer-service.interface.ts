@@ -14,4 +14,5 @@ export interface OfferService {
   deleteFavoriteById(offerId: string): Promise<DocumentType<OfferEntity> | null>;
   addFavoriteById(offerId: string): Promise<DocumentType<OfferEntity> | null>;
   exists(documentId: string): Promise<boolean>;
+  updateRating(offerId: string): Promise<DocumentType<OfferEntity> | null>;
 }

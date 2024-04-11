@@ -16,13 +16,12 @@ tags:
     description: Действия с пользователем.
 
 paths:
-  /users/register:
+  /register:
     post:
       tags:
         - users
       summary: Регистрация пользователя
       description: Регистрирует нового пользователя.
-
       requestBody:
         description: Информация для создания нового пользователя.
         content:
@@ -30,28 +29,29 @@ paths:
             schema:
               $ref: "#/components/schemas/createUser"
         required: true
-
       responses:
         "201":
           description: Пользователь зарегистрирован. Объект пользователя.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/user"
+                properties:
+                  id:
+                    type: string
+                    example: "123ewaxs243qfvsd"
         "400":
-          description: Bad Request
+          description: Неправильный запрос.
         "409":
           description: Пользователь с таким email уже существует.
         "500":
-          description: Internal Error
+          description: Внутренняя ошибка сервера.
 
-  /users/login:
+  /login:
     post:
       tags:
         - users
       summary: Авторизация пользователя
       description: Авторизует пользователя на основе логина и пароля
-
       requestBody:
         description: Информация для авторизации пользователя.
         content:
@@ -59,7 +59,6 @@ paths:
             schema:
               $ref: "#/components/schemas/loginUser"
         required: true
-
       responses:
         "201":
           description: Пользователь авторизован. Объект пользователя.
@@ -71,30 +70,18 @@ paths:
                   - properties:
                       token:
                         type: string
-
         "400":
-          description: Bad Request
+          description: Неправильный запрос.
         "401":
           description: Логин или пароль неверный или пользователь не существует.
         "500":
-          description: Internal Error
+          description: Внутренняя ошибка сервера.
 
     get:
       tags:
         - users
       summary: Проверка состояния пользователя
       description: Возвращает информацию по авторизованному пользователю
-
-      requestBody:
-        description: Токен пользователя.
-        content:
-          application/json:
-            schema:
-              properties:
-                token:
-                  type: string
-        required: true
-
       responses:
         "201":
           description: Пользователь авторизован. Объект пользователя.
@@ -103,19 +90,50 @@ paths:
               schema:
                 $ref: "#/components/schemas/user"
         "400":
-          description: Bad Request
+          description: Неправильный запрос.
         "401":
           description: Пользователь не авторизован.
         "500":
-          description: Internal Error
+          description: Внутренняя ошибка сервера.
+  
+  /{userId}/avatar:
+    post:
+      tags:
+        - users
+      summary: Загрузить изображение аватара
+      description: Загружает изображение аватара пользователя. Изображение
+        аватара должно быть в формате `png` или `jpg`.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Аватар пользователя.
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - avatar
+              properties:
+                avatarUrl:
+                  type: array
+                  items: {}
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Неправильный запрос.
+        '401':
+          description: Пользователь не авторизован.
 
-  /users/logout:
+  /logout:
     delete:
       tags:
         - users
       summary: Завершение сеанса
       description: Осуществляет завершение пользовательского сеанса
-
       responses:
         "204":
           description: ОК
@@ -134,11 +152,11 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/smallOffer"
+                  $ref: "#/components/schemas/offer"
         "400":
-          description: Bad Request
+          description: Неправильный запрос.
         "500":
-          description: Internal Error
+          description: Внутренняя ошибка сервера.
 
     post:
       tags:
@@ -151,7 +169,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/offer"
+              $ref: "#/components/schemas/createOffer"
         required: true
 
       responses:
@@ -165,11 +183,11 @@ paths:
                       id:
                         type: string
                         example: "123ewaxs243qfvsd"
-                  - $ref: "#/components/schemas/offer"
+                  - $ref: "#/components/schemas/fullOffer"
         "400":
-          description: Bad Request
+          description: Неправильный запрос.
         "500":
-          description: Internal Error
+          description: Внутренняя ошибка сервера.
 
   /offers/{offerId}:
     get:
@@ -189,16 +207,18 @@ paths:
           content:
             application/json:
               schema:
+                required:
+                  - id
                 allOf:
                   - properties:
                       id:
                         type: string
                         example: "123ewaxs243qfvsd"
-                  - $ref: "#/components/schemas/offer"    
+                  - $ref: "#/components/schemas/fullOffer"    
         "400":
-          description: Bad Request
+          description: Неправильный запрос.
         "500":
-          description: Internal Error
+          description: Внутренняя ошибка сервера.
 
     patch:
       tags:
@@ -216,8 +236,10 @@ paths:
         content:
           application/json:
             schema:
+              required:
+                  - id
               allOf:
-                - $ref: "#/components/schemas/offer"
+                - $ref: "#/components/schemas/fullOffer"
                 - properties:
                     id:
                       type: string
@@ -235,11 +257,11 @@ paths:
                       id:
                         type: string
                         example: "123ewaxs243qfvsd"
-                  - $ref: "#/components/schemas/offer"
+                  - $ref: "#/components/schemas/fullOffer"
         "400":
-          description: Bad Request
+          description: Неправильный запрос.
         "500":
-          description: Internal Error
+          description: Внутренняя ошибка сервера.
 
     delete:
       tags:
@@ -256,7 +278,7 @@ paths:
         "204":
           description: ОК
 
-  /offers/premium:
+  /premium?city={cityName}:
     get:
       tags:
         - offers
@@ -276,13 +298,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/smallOffer"    
+                  $ref: "#/components/schemas/offer"    
         "400":
-          description: Bad Request
+          description: Неправильный запрос.
         "500":
-          description: Internal Error
+          description: Внутренняя ошибка сервера.
   
-  /offers/favorite:
+  /favorite:
     get:
       tags:
         - offers
@@ -296,13 +318,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/smallOffer"    
+                  $ref: "#/components/schemas/offer"    
         "400":
-          description: Bad Request
+          description: Неправильный запрос.
         "500":
-          description: Internal Error
+          description: Внутренняя ошибка сервера.
 
-  /offers/favorite/{offerId}:
+  /favorite/{offerId}:
     post:
       tags:
         - offers
@@ -320,11 +342,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/smallOffer"    
+                $ref: "#/components/schemas/fullOffer"    
         "400":
-          description: Bad Request
+          description: Неправильный запрос.
         "500":
-          description: Internal Error
+          description: Внутренняя ошибка сервера.
     
     delete:
       tags:
@@ -343,9 +365,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/smallOffer" 
+                $ref: "#/components/schemas/fullOffer" 
 
-  /comments/{offerId}:
+  /offers/{offerId}/comments:
     get:
       tags:
         - comments
@@ -367,9 +389,9 @@ paths:
                 items:
                   $ref: "#/components/schemas/comment"    
         "400":
-          description: Bad Request
+          description: Неправильный запрос.
         "500":
-          description: Internal Error 
+          description: Внутренняя ошибка сервера. 
     
     post:
       tags:
@@ -388,7 +410,16 @@ paths:
         content:
           application/json:
             schema:
-                $ref: "#/components/schemas/comment"
+              required:
+                - comment
+                - rating
+              properties:
+                comment: 
+                  type: string
+                  example: "Хорошо"
+                rating:
+                  type: number
+                  example: 7
         required: true
 
       responses:
@@ -397,6 +428,8 @@ paths:
           content:
             application/json:
               schema:
+                required:
+                  - id
                 allOf:
                   - properties:
                       id:
@@ -404,14 +437,58 @@ paths:
                         example: "123ewaxs243qfvsd"
                   - $ref: "#/components/schemas/comment"    
         "400":
-          description: Bad Request
+          description: Неправильный запрос.
         "500":
-          description: Internal Error
+          description: Внутренняя ошибка сервера.
 
 components:
   schemas:
+    userType:
+      type: string
+      enum:
+        - regular
+        - pro
+      example: pro
+
+    cityName:
+      type: string
+      enum:
+        - Paris
+        - Cologne
+        - Brussels
+        - Amsterdam
+        - Hamburg
+        - Dusseldorf
+      example: Cologne
+
+    housingType:
+      type: string
+      enum:
+        - apartment
+        - room
+        - hotel
+        - house
+      example: apartment
+
+    goods:
+      type: string
+      enum:
+        - Air conditioning
+        - Breakfast
+        - Baby seat
+        - Laptop friendly workspace
+        - Washer
+        - Towels
+        - Fridge
+      example: Breakfast
+
     createUser:
       type: object
+      required:
+        - name
+        - email
+        - type
+        - password
       properties:
         name:
           type: string
@@ -421,13 +498,8 @@ components:
           type: string
           example: keks@htmlacademy.ru
 
-        avatarPath:
-          type: string
-          example: http://localhost:5000/images/avatar.jpg
-
         type:
-          type: string
-          example: обычный
+          $ref: "#/components/schemas/userType"
 
         password:
           type: string
@@ -435,6 +507,10 @@ components:
 
     loginUser:
       type: object
+
+      required:
+        - email
+        - password
 
       properties:
         email:
@@ -448,29 +524,47 @@ components:
     user:
       type: object
 
-      properties:
-        id:
-          type: string
-          example: 6329c3d6a04ab1061c6425ea
+      required:
+        - name
+        - avatarUrl
+        - type
+        - email
 
+      properties:
         name:
           type: string
           example: Keks
+
+        avatarUrl:
+          type: string
+          example: http://localhost:5000/images/avatar.jpg
+
+        type:
+          $ref: "#/components/schemas/userType"
 
         email:
           type: string
           example: keks@htmlacademy.ru
 
-        avatarPath:
-          type: string
-          example: http://localhost:5000/images/avatar.jpg
-
-        type:
-          type: string
-          example: обычный
-
-    offer:
+    fullOffer:
       type: object
+
+      required:
+        - title
+        - description
+        - city
+        - price
+        - rating
+        - isPremium
+        - isFavorite
+        - location
+        - previewImage
+        - type
+        - bedrooms
+        - goods
+        - host
+        - images
+        - maxAdults
 
       properties:
         title:
@@ -486,8 +580,7 @@ components:
           example: 2024-03-06T20:15:42.792Z
 
         city:
-          type: string
-          example: Paris
+          $ref: "#/components/schemas/city"
 
         previewImage:
           type: string
@@ -495,13 +588,15 @@ components:
 
         images:
           type: array
+          items:
+            type: string
           example: [apartments-1.jpg, apartments-2.jpg]
 
-        premium:
+        isPremium:
           type: boolean
           example: false
 
-        favorite:
+        isFavorite:
           type: boolean
           example: true
 
@@ -510,14 +605,13 @@ components:
           example: 2
 
         type:
-          type: string
-          example: hotel
+          $ref: "#/components/schemas/housingType"
 
-        roomsCount:
+        bedrooms:
           type: number
           example: 7
 
-        guestsCount:
+        maxAdults:
           type: number
           example: 7
 
@@ -525,29 +619,34 @@ components:
           type: number
           example: 700
 
-        conveniences:
+        goods:
           type: array
-          example: [Washer, Towels, Fridge]
+          items:
+            $ref: "#/components/schemas/goods"
 
-        authorOffer:
-          type: object
-          example:
-            {
-              name: Keks,
-              email: keks@htmlacademy.ru,
-              type: обычный
-            }
+        host:
+          $ref: "#/components/schemas/user"
 
         commentsCount:
           type: number
           example: 7
 
-        coordinats:
-          type: array
-          example: 700
+        location:
+          $ref: "#/components/schemas/location"
 
-    smallOffer:
+    offer:
       type: object
+
+      required:
+        - title
+        - city
+        - price
+        - rating
+        - isPremium
+        - isFavorite
+        - previewImage
+        - type
+        - date
 
       properties:
         title:
@@ -559,18 +658,17 @@ components:
           example: 2024-03-06T20:15:42.792Z
 
         city:
-          type: string
-          example: Paris
+          $ref: "#/components/schemas/city"
 
         previewImage:
           type: string
           example: preview-apartments.jpg
 
-        premium:
+        isPremium:
           type: boolean
           example: false
 
-        favorite:
+        isFavorite:
           type: boolean
           example: true
 
@@ -579,8 +677,7 @@ components:
           example: 2
 
         type:
-          type: string
-          example: hotel
+          $ref: "#/components/schemas/housingType"
 
         price:
           type: number
@@ -590,15 +687,87 @@ components:
           type: number
           example: 7
 
+    createOffer:
+      type: object
+
+      required:
+        - title
+        - description
+        - city
+        - previewImage
+        - isPremium
+        - type
+        - bedrooms
+        - maxAdults
+        - price
+        - goods
+        - location
+        - images
+
+      properties:
+        title:
+          type: string
+          example: Солнченый бриз
+
+        description:
+          type: string
+          example: Солнечный бриз - замечтальное место для отдыха.
+
+        city:
+          $ref: "#/components/schemas/city"
+
+        previewImage:
+          type: string
+          example: preview-apartments.jpg
+
+        isPremium:
+          type: boolean
+          example: false
+
+        type:
+          $ref: "#/components/schemas/housingType"
+
+        bedrooms:
+          type: number
+          example: 3
+
+        maxAdults: 
+          type: number
+          example: 3
+
+        price: 
+          type: number
+          example: 3
+
+        goods: 
+          type: array
+          items: 
+            $ref: "#/components/schemas/goods"
+
+        location:
+          $ref: "#/components/schemas/location"
+
+        images: 
+          type: array
+          items:
+            type: string
+          example: [apartments-1.jpg, apartments-2.jpg]
+
     comment:
       type: object
 
+      required:
+        - comment
+        - date
+        - rating
+        - user
+
       properties:
-        text:
+        comment:
           type: string
           example: "Good hotel"
 
-        createdDate:
+        date:
           type: string
           example: 2024-03-06T20:15:42.792Z
 
@@ -606,13 +775,27 @@ components:
           type: number
           example: 2
 
-        authorOffer:
-          type: object
-          example:
-            {
-              name: Keks,
-              email: keks@htmlacademy.ru,
-              type: обычный
-            }
+        user:
+          $ref: "#/components/schemas/user"
+
+    city:
+      type: object
+      properties:
+          name: 
+            $ref: "#/components/schemas/cityName"
+
+          location:
+            $ref: "#/components/schemas/location"
+
+    location:
+      type: object
+      properties:
+        latitude: 
+          type: number
+          example: 48.85661
+
+        longitude:
+          type: number
+          example: 2.351499
         
 

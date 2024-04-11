@@ -41,7 +41,7 @@ export function createOffer(offerData: string): Offer {
     city,
     previewImage,
     images: images.split(';'),
-    premium: Boolean(premium),
+    isPremium: Boolean(premium),
     favorite: Boolean(favorite),
     rating: Number.parseFloat(rating),
     type: type as HousingType,
