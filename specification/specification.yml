@@ -1,0 +1,801 @@
+openapi: 3.0.2
+info:
+  title: API сервер для демо-проекта «Шесть городов».
+  description: |-
+    * Список ресурсов и маршрутов сервера «Шесть городов».
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  version: 2.0.0
+tags:
+  - name: offers
+    description: Действия с объявлениями.
+  - name: comments
+    description: Действия с комментариями.
+  - name: users
+    description: Действия с пользователем.
+
+paths:
+  /register:
+    post:
+      tags:
+        - users
+      summary: Регистрация пользователя
+      description: Регистрирует нового пользователя.
+      requestBody:
+        description: Информация для создания нового пользователя.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createUser"
+        required: true
+      responses:
+        "201":
+          description: Пользователь зарегистрирован. Объект пользователя.
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: string
+                    example: "123ewaxs243qfvsd"
+        "400":
+          description: Неправильный запрос.
+        "409":
+          description: Пользователь с таким email уже существует.
+        "500":
+          description: Внутренняя ошибка сервера.
+
+  /login:
+    post:
+      tags:
+        - users
+      summary: Авторизация пользователя
+      description: Авторизует пользователя на основе логина и пароля
+      requestBody:
+        description: Информация для авторизации пользователя.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/loginUser"
+        required: true
+      responses:
+        "201":
+          description: Пользователь авторизован. Объект пользователя.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/user"
+                  - properties:
+                      token:
+                        type: string
+        "400":
+          description: Неправильный запрос.
+        "401":
+          description: Логин или пароль неверный или пользователь не существует.
+        "500":
+          description: Внутренняя ошибка сервера.
+
+    get:
+      tags:
+        - users
+      summary: Проверка состояния пользователя
+      description: Возвращает информацию по авторизованному пользователю
+      responses:
+        "201":
+          description: Пользователь авторизован. Объект пользователя.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        "400":
+          description: Неправильный запрос.
+        "401":
+          description: Пользователь не авторизован.
+        "500":
+          description: Внутренняя ошибка сервера.
+  
+  /{userId}/avatar:
+    post:
+      tags:
+        - users
+      summary: Загрузить изображение аватара
+      description: Загружает изображение аватара пользователя. Изображение
+        аватара должно быть в формате `png` или `jpg`.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Аватар пользователя.
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - avatar
+              properties:
+                avatarUrl:
+                  type: array
+                  items: {}
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Неправильный запрос.
+        '401':
+          description: Пользователь не авторизован.
+
+  /logout:
+    delete:
+      tags:
+        - users
+      summary: Завершение сеанса
+      description: Осуществляет завершение пользовательского сеанса
+      responses:
+        "204":
+          description: ОК
+
+  /offers:
+    get:
+      tags:
+        - offers
+      summary: Получение списка предложений
+      description: Возвращает список предложений по аренде
+      responses:
+        "200":
+          description: Список предложений об аренде
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/offer"
+        "400":
+          description: Неправильный запрос.
+        "500":
+          description: Внутренняя ошибка сервера.
+
+    post:
+      tags:
+        - offers
+      summary: Создание предложения об аренде
+      description: Создает предложение об аренде
+
+      requestBody:
+        description: Информация для создания нового предложения об аренде.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createOffer"
+        required: true
+
+      responses:
+        "201":
+          description: Предложение об аренде создано. Объект предложения.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - properties:
+                      id:
+                        type: string
+                        example: "123ewaxs243qfvsd"
+                  - $ref: "#/components/schemas/fullOffer"
+        "400":
+          description: Неправильный запрос.
+        "500":
+          description: Внутренняя ошибка сервера.
+
+  /offers/{offerId}:
+    get:
+      tags:
+        - offers
+      summary: Детальная информация по предложению
+      description: Возвращает детальную информацию по предложению об аренде
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Детальная информация по предложению об аренде
+          content:
+            application/json:
+              schema:
+                required:
+                  - id
+                allOf:
+                  - properties:
+                      id:
+                        type: string
+                        example: "123ewaxs243qfvsd"
+                  - $ref: "#/components/schemas/fullOffer"    
+        "400":
+          description: Неправильный запрос.
+        "500":
+          description: Внутренняя ошибка сервера.
+
+    patch:
+      tags:
+        - offers
+      summary: Редактирование предложения
+      description: Редактирует предложение об аренде
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Информация для редактирования предложения об аренде.
+        content:
+          application/json:
+            schema:
+              required:
+                  - id
+              allOf:
+                - $ref: "#/components/schemas/fullOffer"
+                - properties:
+                    id:
+                      type: string
+                      example: "123ewaxs243qfvsd"
+        required: true
+
+      responses:
+        "200":
+          description: Предложение об аренде отредактировано. Объект предложения.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - properties:
+                      id:
+                        type: string
+                        example: "123ewaxs243qfvsd"
+                  - $ref: "#/components/schemas/fullOffer"
+        "400":
+          description: Неправильный запрос.
+        "500":
+          description: Внутренняя ошибка сервера.
+
+    delete:
+      tags:
+        - offers
+      summary: Удаление предложения по аренде
+      description: Осуществляет удаление предложения по аренде
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: ОК
+
+  /premium?city={cityName}:
+    get:
+      tags:
+        - offers
+      summary: Премиальные предложения для города
+      description: Возвращает премиальные предложения по аренде для города
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Премиальные предложения для города
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/offer"    
+        "400":
+          description: Неправильный запрос.
+        "500":
+          description: Внутренняя ошибка сервера.
+  
+  /favorite:
+    get:
+      tags:
+        - offers
+      summary: Список избранных предложений
+      description: Возвращает список избранных предложений по аренде
+      responses:
+        "200":
+          description: Избранные предложения по аренде
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/offer"    
+        "400":
+          description: Неправильный запрос.
+        "500":
+          description: Внутренняя ошибка сервера.
+
+  /favorite/{offerId}:
+    post:
+      tags:
+        - offers
+      summary: Добавление предложения в избранное
+      description: Добавляет в список избранных предложение по аренде
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Предложение добавлено в избранное. Объект предложения.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fullOffer"    
+        "400":
+          description: Неправильный запрос.
+        "500":
+          description: Внутренняя ошибка сервера.
+    
+    delete:
+      tags:
+        - offers
+      summary: Удаление предложения по аренде из избранного
+      description: Осуществляет удаление предложения по аренде из избранного
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: ОК
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fullOffer" 
+
+  /offers/{offerId}/comments:
+    get:
+      tags:
+        - comments
+      summary: Список комментариев для предложения
+      description: Возвращает список комментариев для предложения по аренде
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Комментарии для предложения
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/comment"    
+        "400":
+          description: Неправильный запрос.
+        "500":
+          description: Внутренняя ошибка сервера. 
+    
+    post:
+      tags:
+        - comments
+      summary: Добавление комментария
+      description: Добавляет в список комментариев для предложения по аренде
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      requestBody:
+        description: Информация для добавления комментария для предложения об аренде.
+        content:
+          application/json:
+            schema:
+              required:
+                - comment
+                - rating
+              properties:
+                comment: 
+                  type: string
+                  example: "Хорошо"
+                rating:
+                  type: number
+                  example: 7
+        required: true
+
+      responses:
+        "201":
+          description: Комментарий добавлен в избранное. Объект комментария.
+          content:
+            application/json:
+              schema:
+                required:
+                  - id
+                allOf:
+                  - properties:
+                      id:
+                        type: string
+                        example: "123ewaxs243qfvsd"
+                  - $ref: "#/components/schemas/comment"    
+        "400":
+          description: Неправильный запрос.
+        "500":
+          description: Внутренняя ошибка сервера.
+
+components:
+  schemas:
+    userType:
+      type: string
+      enum:
+        - regular
+        - pro
+      example: pro
+
+    cityName:
+      type: string
+      enum:
+        - Paris
+        - Cologne
+        - Brussels
+        - Amsterdam
+        - Hamburg
+        - Dusseldorf
+      example: Cologne
+
+    housingType:
+      type: string
+      enum:
+        - apartment
+        - room
+        - hotel
+        - house
+      example: apartment
+
+    goods:
+      type: string
+      enum:
+        - Air conditioning
+        - Breakfast
+        - Baby seat
+        - Laptop friendly workspace
+        - Washer
+        - Towels
+        - Fridge
+      example: Breakfast
+
+    createUser:
+      type: object
+      required:
+        - name
+        - email
+        - type
+        - password
+      properties:
+        name:
+          type: string
+          example: Keks
+
+        email:
+          type: string
+          example: keks@htmlacademy.ru
+
+        type:
+          $ref: "#/components/schemas/userType"
+
+        password:
+          type: string
+          example: 123456
+
+    loginUser:
+      type: object
+
+      required:
+        - email
+        - password
+
+      properties:
+        email:
+          type: string
+          example: keks@htmlacademy.ru
+
+        password:
+          type: string
+          example: 123456
+
+    user:
+      type: object
+
+      required:
+        - name
+        - avatarUrl
+        - type
+        - email
+
+      properties:
+        name:
+          type: string
+          example: Keks
+
+        avatarUrl:
+          type: string
+          example: http://localhost:5000/images/avatar.jpg
+
+        type:
+          $ref: "#/components/schemas/userType"
+
+        email:
+          type: string
+          example: keks@htmlacademy.ru
+
+    fullOffer:
+      type: object
+
+      required:
+        - title
+        - description
+        - city
+        - price
+        - rating
+        - isPremium
+        - isFavorite
+        - location
+        - previewImage
+        - type
+        - bedrooms
+        - goods
+        - host
+        - images
+        - maxAdults
+
+      properties:
+        title:
+          type: string
+          example: Солнченый бриз
+
+        description:
+          type: string
+          example: Солнченый бриз - лучшее место для отдыха
+
+        createdDate:
+          type: string
+          example: 2024-03-06T20:15:42.792Z
+
+        city:
+          $ref: "#/components/schemas/city"
+
+        previewImage:
+          type: string
+          example: preview-apartments.jpg
+
+        images:
+          type: array
+          items:
+            type: string
+          example: [apartments-1.jpg, apartments-2.jpg]
+
+        isPremium:
+          type: boolean
+          example: false
+
+        isFavorite:
+          type: boolean
+          example: true
+
+        rating:
+          type: number
+          example: 2
+
+        type:
+          $ref: "#/components/schemas/housingType"
+
+        bedrooms:
+          type: number
+          example: 7
+
+        maxAdults:
+          type: number
+          example: 7
+
+        price:
+          type: number
+          example: 700
+
+        goods:
+          type: array
+          items:
+            $ref: "#/components/schemas/goods"
+
+        host:
+          $ref: "#/components/schemas/user"
+
+        commentsCount:
+          type: number
+          example: 7
+
+        location:
+          $ref: "#/components/schemas/location"
+
+    offer:
+      type: object
+
+      required:
+        - title
+        - city
+        - price
+        - rating
+        - isPremium
+        - isFavorite
+        - previewImage
+        - type
+        - date
+
+      properties:
+        title:
+          type: string
+          example: Солнченый бриз
+
+        createdDate:
+          type: string
+          example: 2024-03-06T20:15:42.792Z
+
+        city:
+          $ref: "#/components/schemas/city"
+
+        previewImage:
+          type: string
+          example: preview-apartments.jpg
+
+        isPremium:
+          type: boolean
+          example: false
+
+        isFavorite:
+          type: boolean
+          example: true
+
+        rating:
+          type: number
+          example: 2
+
+        type:
+          $ref: "#/components/schemas/housingType"
+
+        price:
+          type: number
+          example: 700
+
+        commentsCount:
+          type: number
+          example: 7
+
+    createOffer:
+      type: object
+
+      required:
+        - title
+        - description
+        - city
+        - previewImage
+        - isPremium
+        - type
+        - bedrooms
+        - maxAdults
+        - price
+        - goods
+        - location
+        - images
+
+      properties:
+        title:
+          type: string
+          example: Солнченый бриз
+
+        description:
+          type: string
+          example: Солнечный бриз - замечтальное место для отдыха.
+
+        city:
+          $ref: "#/components/schemas/city"
+
+        previewImage:
+          type: string
+          example: preview-apartments.jpg
+
+        isPremium:
+          type: boolean
+          example: false
+
+        type:
+          $ref: "#/components/schemas/housingType"
+
+        bedrooms:
+          type: number
+          example: 3
+
+        maxAdults: 
+          type: number
+          example: 3
+
+        price: 
+          type: number
+          example: 3
+
+        goods: 
+          type: array
+          items: 
+            $ref: "#/components/schemas/goods"
+
+        location:
+          $ref: "#/components/schemas/location"
+
+        images: 
+          type: array
+          items:
+            type: string
+          example: [apartments-1.jpg, apartments-2.jpg]
+
+    comment:
+      type: object
+
+      required:
+        - comment
+        - date
+        - rating
+        - user
+
+      properties:
+        comment:
+          type: string
+          example: "Good hotel"
+
+        date:
+          type: string
+          example: 2024-03-06T20:15:42.792Z
+
+        rating:
+          type: number
+          example: 2
+
+        user:
+          $ref: "#/components/schemas/user"
+
+    city:
+      type: object
+      properties:
+          name: 
+            $ref: "#/components/schemas/cityName"
+
+          location:
+            $ref: "#/components/schemas/location"
+
+    location:
+      type: object
+      properties:
+        latitude: 
+          type: number
+          example: 48.85661
+
+        longitude:
+          type: number
+          example: 2.351499
+        
+

@@ -1,18 +1,18 @@
 import { Command } from './command.interface.js';
 import { TSVFileReader } from '../../shared/libs/file-reader/tsv-file-reader.js';
-import { createRentalOffer, getErrorMessage, getMongoURI } from '../../shared/helpers/index.js';
+import { createOffer, getErrorMessage, getMongoURI } from '../../shared/helpers/index.js';
 import { DefaultUserService, UserModel, UserService } from '../../shared/modules/user/index.js';
-import { DefaultRentalOfferService, RentalOfferModel, RentalOfferService } from '../../shared/modules/rental-offer/index.js';
+import { DefaultOfferService, OfferModel, OfferService } from '../../shared/modules/offer/index.js';
 import { DatabaseClient, MongoDatabaseClient } from '../../shared/libs/database-client/index.js';
 import { Logger } from '../../shared/libs/logger/index.js';
 import { ConsoleLogger } from '../../shared/libs/logger/console.logger.js';
-import { RentalOffer } from '../../shared/types/index.js';
+import { Offer } from '../../shared/types/index.js';
 import { DEFAULT_DB_PORT, DEFAULT_USER_PASSWORD } from './command.constant.js';
 
 
 export class ImportCommand implements Command {
   private userService: UserService;
-  private rentalOfferService: RentalOfferService;
+  private offerService: OfferService;
   private databaseClient: DatabaseClient;
   private logger: Logger;
   private salt: string;
@@ -22,14 +22,14 @@ export class ImportCommand implements Command {
     this.onCompleteImport = this.onCompleteImport.bind(this);
 
     this.logger = new ConsoleLogger();
-    this.rentalOfferService = new DefaultRentalOfferService(this.logger, RentalOfferModel);
+    this.offerService = new DefaultOfferService(this.logger, OfferModel);
     this.userService = new DefaultUserService(this.logger, UserModel);
     this.databaseClient = new MongoDatabaseClient(this.logger);
   }
 
   private async onImportedLine(line: string, resolve: () => void) {
-    const rentalOffer = createRentalOffer(line);
-    await this.saveRentalOffer(rentalOffer);
+    const offer = createOffer(line);
+    await this.saveOffer(offer);
     resolve();
   }
 
@@ -38,30 +38,30 @@ export class ImportCommand implements Command {
     this.databaseClient.disconnect();
   }
 
-  private async saveRentalOffer(rentalOffer: RentalOffer) {
+  private async saveOffer(offer: Offer) {
     const user = await this.userService.findOrCreate({
-      ...rentalOffer.authorOffer,
+      ...offer.authorOffer,
       password: DEFAULT_USER_PASSWORD
     }, this.salt);
 
-    await this.rentalOfferService.create({
-      title: rentalOffer.title,
-      description: rentalOffer.description,
-      createdDate: rentalOffer.createdDate,
-      city: rentalOffer.city,
-      previewImage: rentalOffer.previewImage,
-      images: rentalOffer.images,
-      premium: rentalOffer.premium,
-      favorite: rentalOffer.favorite,
-      rating: rentalOffer.rating,
-      type: rentalOffer.type,
-      roomsCount: rentalOffer.roomsCount,
-      guestsCount: rentalOffer.guestsCount,
-      price: rentalOffer.price,
-      conveniences: rentalOffer.conveniences,
+    await this.offerService.create({
+      title: offer.title,
+      description: offer.description,
+      createdDate: offer.createdDate,
+      city: offer.city,
+      previewImage: offer.previewImage,
+      images: offer.images,
+      isPremium: offer.isPremium,
+      favorite: offer.favorite,
+      rating: offer.rating,
+      type: offer.type,
+      roomsCount: offer.roomsCount,
+      guestsCount: offer.guestsCount,
+      price: offer.price,
+      conveniences: offer.conveniences,
       authorOfferId: user.id,
-      commentsCount: rentalOffer.commentsCount,
-      coordinats: rentalOffer.coordinats
+      commentsCount: offer.commentsCount,
+      coordinats: offer.coordinats
     });
 
   }

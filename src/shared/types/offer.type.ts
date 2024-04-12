@@ -2,14 +2,14 @@ import { Convenience } from './convenience.enum.js';
 import { HousingType } from './housing-type.enum.js';
 import { User } from './user.type.js';
 
-export type RentalOffer = {
+export type Offer = {
    title: string;
    description: string;
    createdDate: Date;
    city: string;
    previewImage: string;
    images: string[];
-   premium: boolean;
+   isPremium: boolean;
    favorite: boolean;
    rating: number;
    type: HousingType;

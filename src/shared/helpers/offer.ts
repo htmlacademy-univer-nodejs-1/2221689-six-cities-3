@@ -1,7 +1,7 @@
 import { Convenience, HousingType, UserType } from '../types/index.js';
-import { RentalOffer } from '../types/rental-offer.type.js';
+import { Offer } from '../types/offer.type.js';
 
-export function createRentalOffer(rentalOfferData: string): RentalOffer {
+export function createOffer(offerData: string): Offer {
   const [
     title,
     description,
@@ -24,7 +24,7 @@ export function createRentalOffer(rentalOfferData: string): RentalOffer {
     userType,
     commentsCount,
     coordinats
-  ] = rentalOfferData.replace('\n', '').split('\t');
+  ] = offerData.replace('\n', '').split('\t');
 
   const user = {
     name,
@@ -41,7 +41,7 @@ export function createRentalOffer(rentalOfferData: string): RentalOffer {
     city,
     previewImage,
     images: images.split(';'),
-    premium: Boolean(premium),
+    isPremium: Boolean(premium),
     favorite: Boolean(favorite),
     rating: Number.parseFloat(rating),
     type: type as HousingType,
