@@ -82,6 +82,15 @@ paths:
         - users
       summary: Проверка состояния пользователя
       description: Возвращает информацию по авторизованному пользователю
+      requestBody:
+        description: Токен для проверки авторизации пользователя.
+        content:
+          application/json:
+            schema:
+              properties:
+                token:
+                  type: string
+        required: true
       responses:
         "201":
           description: Пользователь авторизован. Объект пользователя.
@@ -134,6 +143,15 @@ paths:
         - users
       summary: Завершение сеанса
       description: Осуществляет завершение пользовательского сеанса
+      requestBody:
+        description: Токен для завершения сеанса пользователя.
+        content:
+          application/json:
+            schema:
+              properties:
+                token:
+                  type: string
+        required: true
       responses:
         "204":
           description: ОК

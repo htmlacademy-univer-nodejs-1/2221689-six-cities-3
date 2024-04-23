@@ -1,23 +1,23 @@
-import { Convenience } from './convenience.enum.js';
+import { City } from './city.enum.js';
+import { Good } from './good.enum.js';
 import { HousingType } from './housing-type.enum.js';
 import { User } from './user.type.js';
 
 export type Offer = {
    title: string;
    description: string;
-   createdDate: Date;
-   city: string;
+   city: City;
    previewImage: string;
    images: string[];
    isPremium: boolean;
-   favorite: boolean;
+   isFavorite: boolean;
    rating: number;
    type: HousingType;
-   roomsCount: number;
-   guestsCount: number;
+   bedrooms: number;
+   maxAdults: number;
    price: number;
-   conveniences: Convenience[];
-   authorOffer: User;
+   goods: Good[];
+   host: User;
    commentsCount: number;
-   coordinats: [number, number]
+   location: [number, number]
 }

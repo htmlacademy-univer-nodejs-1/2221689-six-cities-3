@@ -1,2 +1,2 @@
-export * from './rental-offer-generator.interface.js';
-export * from './tsv-rental-offer-generator.js';
+export * from './offer-generator.interface.js';
+export * from './tsv-offer-generator.js';

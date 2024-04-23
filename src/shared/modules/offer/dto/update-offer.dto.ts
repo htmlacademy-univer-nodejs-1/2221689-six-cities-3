@@ -1,19 +1,19 @@
-import { Convenience, HousingType } from '../../../types/index.js';
+import { City, Good, HousingType } from '../../../types/index.js';
 
 export class UpdateOfferDto {
-  title?: string;
-  description?: string;
-  city?: string;
-  previewImage?: string;
-  images?: string[];
-  premium?: boolean;
-  favorite?: boolean;
-  rating?: number;
-  type?: HousingType;
-  roomsCount?: number;
-  guestsCount?: number;
-  price?: number;
-  conveniences?: Convenience[];
-  authorOfferId?: string;
-  coordinats?: [number, number];
+  public title?: string;
+  public description?: string;
+  public city?: City;
+  public previewImage?: string;
+  public images?: string[];
+  public isPremium?: boolean;
+  public isFavorite?: boolean;
+  public rating?: number;
+  public type?: HousingType;
+  public bedrooms?: number;
+  public maxAdults?: number;
+  public price?: number;
+  public goods?: Good[];
+  public host?: string;
+  public location?: [number, number];
 }

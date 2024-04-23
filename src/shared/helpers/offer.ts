@@ -1,35 +1,31 @@
-import { Convenience, HousingType, UserType } from '../types/index.js';
+import { City, Good, HousingType, UserType } from '../types/index.js';
 import { Offer } from '../types/offer.type.js';
 
 export function createOffer(offerData: string): Offer {
   const [
     title,
     description,
-    createdDate,
     city,
     previewImage,
     images,
-    premium,
-    favorite,
-    rating,
+    isPremium,
     type,
-    roomsCount,
-    guestsCount,
+    bedrooms,
+    maxAdults,
     price,
-    conveniences,
+    goods,
     name,
     email,
-    avatarPath,
+    avatarUrl,
     password,
     userType,
-    commentsCount,
     coordinats
   ] = offerData.replace('\n', '').split('\t');
 
   const user = {
     name,
     email,
-    avatarPath,
+    avatarUrl,
     password,
     type: userType as UserType
   };
@@ -37,21 +33,20 @@ export function createOffer(offerData: string): Offer {
   return {
     title,
     description,
-    createdDate: new Date(createdDate),
-    city,
+    city: city as City,
     previewImage,
     images: images.split(';'),
-    isPremium: Boolean(premium),
-    favorite: Boolean(favorite),
-    rating: Number.parseFloat(rating),
+    isPremium: Boolean(isPremium),
+    isFavorite: false,
+    rating: 0,
     type: type as HousingType,
-    roomsCount: Number.parseInt(roomsCount, 10),
-    guestsCount: Number.parseInt(guestsCount, 10),
+    bedrooms: Number.parseInt(bedrooms, 10),
+    maxAdults: Number.parseInt(maxAdults, 10),
     price: Number.parseFloat(price),
-    conveniences: conveniences.split(';')
-      .map((convenience) => convenience as Convenience),
-    authorOffer: user,
-    commentsCount: Number.parseInt(commentsCount, 10),
-    coordinats: [Number.parseFloat(coordinats.split(';')[0]), Number.parseFloat(coordinats.split(';')[1])]
+    goods: goods.split(';')
+      .map((good) => good as Good),
+    host: user,
+    commentsCount: 0,
+    location: [Number.parseFloat(coordinats.split(';')[0]),Number.parseFloat(coordinats.split(';')[1])]
   };
 }

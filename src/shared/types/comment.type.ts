@@ -1,8 +1,9 @@
+import { Offer } from './offer.type.js';
 import { User } from './user.type.js';
 
 export type Comment = {
-    text: string;
-    createdDate: Date;
+    comment: string;
     rating: number;
-    authorOffer: User;
+    user: User;
+    offer: Offer;
 }
