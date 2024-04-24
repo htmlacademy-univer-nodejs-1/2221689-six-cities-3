@@ -1,5 +1,5 @@
 import { Ref, defaultClasses, getModelForClass, modelOptions, prop } from '@typegoose/typegoose';
-import { Convenience, HousingType } from '../../types/index.js';
+import { City, Good, HousingType } from '../../types/index.js';
 import { UserEntity } from '../user/index.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
@@ -19,11 +19,12 @@ export class OfferEntity extends defaultClasses.TimeStamps {
     @prop({ required: true, trim: true, type: () => String })
     public description: string;
 
-    @prop({ required: true, type: () => String })
-    public createdDate: Date;
-
-    @prop({ required: true, type: () => String })
-    public city: string;
+    @prop({
+      required: true,
+      type: () => String,
+      enum: City
+    })
+    public city: City;
 
     @prop({ required: true, type: () => String })
     public previewImage: string;
@@ -32,12 +33,12 @@ export class OfferEntity extends defaultClasses.TimeStamps {
     public images: string[];
 
     @prop({ required: true, default: false, type: () => Boolean })
-    public premium: boolean;
+    public isPremium: boolean;
 
     @prop({ required: true, default: false, type: () => Boolean })
-    public favorite: boolean;
+    public isFavorite: boolean;
 
-    @prop({ required: true, type: () => Number })
+    @prop({ required: true, default: 0, type: () => Number })
     public rating: number;
 
     @prop({
@@ -48,31 +49,31 @@ export class OfferEntity extends defaultClasses.TimeStamps {
     public type: HousingType;
 
     @prop({ required: true, type: () => Number })
-    public roomsCount: number;
+    public bedrooms: number;
 
     @prop({ required: true, type: () => Number })
-    public guestsCount: number;
+    public maxAdults: number;
 
     @prop({ required: true, type: () => Number })
     public price: number;
 
     @prop({
       required: true,
-      type: () => Array<Convenience>
+      type: () => Array<Good>
     })
-    public conveniences: Convenience[];
+    public goods: Good[];
 
     @prop({
       ref: UserEntity,
       required: true
     })
-    public authorOfferId: Ref<UserEntity>;
+    public host: Ref<UserEntity>;
 
     @prop({ required: false, default: 0, type: () => Number })
     public commentsCount: number;
 
     @prop({ required: true, type: () => Array<number> })
-    public coordinats: [number, number];
+    public location: [number, number];
 }
 
 export const OfferModel = getModelForClass(OfferEntity);

@@ -1,5 +1,5 @@
 import { inject, injectable } from 'inversify';
-import { Component, SortType } from '../../types/index.js';
+import { City, Component, SortType } from '../../types/index.js';
 import { CreateOfferDto, OfferEntity, OfferService, UpdateOfferDto } from './index.js';
 import { Logger } from '../../libs/logger/index.js';
 import { DocumentType, types } from '@typegoose/typegoose';
@@ -23,7 +23,7 @@ export class DefaultOfferService implements OfferService {
   public async findById(offerId: string): Promise<DocumentType<OfferEntity> | null> {
     return this.offerModel
       .findById(offerId)
-      .populate('authorOfferId')
+      .populate('host')
       .exec();
   }
 
@@ -32,14 +32,14 @@ export class DefaultOfferService implements OfferService {
     return this.offerModel
       .find()
       .limit(limit)
-      .populate('authorOfferId')
+      .populate('host')
       .exec();
   }
 
   public async updateById(offerId: string, dto: UpdateOfferDto): Promise<DocumentType<OfferEntity> | null> {
     return this.offerModel
       .findByIdAndUpdate(offerId, dto, {new: true})
-      .populate('authorOfferId')
+      .populate('host')
       .exec();
   }
 
@@ -58,31 +58,31 @@ export class DefaultOfferService implements OfferService {
 
   public async findPremium(city: string): Promise<DocumentType<OfferEntity>[]> {
     return this.offerModel
-      .find({city: city, premium: true})
+      .find({city: city as City, isPremium: true})
       .sort({ createdAt: SortType.Down })
       .limit(PREMIUM_OFFER_COUNT)
-      .populate('authorOfferId')
+      .populate('host')
       .exec();
   }
 
   public async findFavorite(): Promise<DocumentType<OfferEntity>[]> {
     return this.offerModel
-      .find({favorite: true})
-      .populate('authorOfferId')
+      .find({isFavorite: true})
+      .populate('host')
       .exec();
   }
 
   public async addFavoriteById(offerId: string): Promise<DocumentType<OfferEntity> | null> {
     return this.offerModel
-      .findByIdAndUpdate(offerId, {favorite: true}, {new: true})
-      .populate('authorOfferId')
+      .findByIdAndUpdate(offerId, {isFavorite: true}, {new: true})
+      .populate('host')
       .exec();
   }
 
   public async deleteFavoriteById(offerId: string): Promise<DocumentType<OfferEntity> | null> {
     return this.offerModel
-      .findByIdAndUpdate(offerId, {favorite: false}, {new: true})
-      .populate('authorOfferId')
+      .findByIdAndUpdate(offerId, {isFavorite: false}, {new: true})
+      .populate('host')
       .exec();
   }
 
@@ -108,7 +108,7 @@ export class DefaultOfferService implements OfferService {
 
     return this.offerModel
       .findByIdAndUpdate(offerId, {rating: newRating[0]}, {new: true})
-      .populate('authorOfferId')
+      .populate('host')
       .exec();
   }
 

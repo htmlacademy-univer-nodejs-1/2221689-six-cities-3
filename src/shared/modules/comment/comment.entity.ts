@@ -13,7 +13,7 @@ export interface CommentEntity extends defaultClasses.Base {}
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 export class CommentEntity extends defaultClasses.TimeStamps {
   @prop({ trim: true, required: true, type: () => String })
-  public text: string;
+  public comment: string;
 
   @prop({
     ref: OfferEntity,
@@ -28,7 +28,7 @@ export class CommentEntity extends defaultClasses.TimeStamps {
     ref: UserEntity,
     required: true,
   })
-  public authorOfferId: Ref<UserEntity>;
+  public userId: Ref<UserEntity>;
 }
 
 export const CommentModel = getModelForClass(CommentEntity);
