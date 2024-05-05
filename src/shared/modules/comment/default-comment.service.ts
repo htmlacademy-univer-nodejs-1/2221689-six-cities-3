@@ -15,12 +15,20 @@ export class DefaultCommentService implements CommentService {
     const newDto = dto;
     newDto.offerId = offerId;
     const comment = await this.commentModel.create(newDto);
-    return comment.populate('userId');
+    return comment.populate(['offerId', 'userId']);
   }
 
   public async findByOfferId(offerId: string): Promise<DocumentType<CommentEntity>[]> {
     return this.commentModel
       .find({offerId})
-      .populate('userId');
+      .populate(['offerId', 'userId']);
+  }
+
+  public async deleteByOfferId(offerId: string): Promise<number> {
+    const result = await this.commentModel
+      .deleteMany({offerId})
+      .exec();
+
+    return result.deletedCount;
   }
 }
