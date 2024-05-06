@@ -1,5 +1,6 @@
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { City, Good, HousingType } from '../../../types/index.js';
+import { UserRdo } from '../../user/index.js';
 
 export class FullOfferRdo {
   @Expose()
@@ -48,7 +49,8 @@ export class FullOfferRdo {
   public goods: Good[];
 
   @Expose()
-  public host: string;
+  @Type(() => UserRdo)
+  public host: UserRdo;
 
   @Expose()
   public location: [number, number];
