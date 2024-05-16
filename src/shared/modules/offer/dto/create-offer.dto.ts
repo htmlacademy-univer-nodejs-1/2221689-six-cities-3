@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsEnum, MaxLength, MinLength, Length, IsInt, Min, Max, IsMongoId, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, MaxLength, MinLength, Length, IsInt, Min, Max, IsString } from 'class-validator';
 import { City, Good, HousingType } from '../../../types/index.js';
 import { CreateOfferValidationMessage } from './create-offer.messages.js';
 
@@ -49,7 +49,6 @@ export class CreateOfferDto {
   @IsEnum(Good, { each: true, message: CreateOfferValidationMessage.type.invalid })
   public goods: Good[];
 
-  @IsMongoId({ message: CreateOfferValidationMessage.host.invalidId })
   public host: string;
 
   @IsArray({ message: CreateOfferValidationMessage.location.invalidFormat })
