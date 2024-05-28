@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsEnum, MaxLength, MinLength, Length, IsInt, Min, Max, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, MaxLength, MinLength, IsInt, Min, Max, IsString, ArrayMaxSize, ArrayMinSize, IsOptional, IsMongoId } from 'class-validator';
 import { City, Good, HousingType } from '../../../types/index.js';
 import { CreateOfferValidationMessage } from './create-offer.messages.js';
 
@@ -21,8 +21,10 @@ export class CreateOfferDto {
   public previewImage: string;
 
   @IsArray({ message: CreateOfferValidationMessage.images.invalidFormat })
-  @Length(6, 6, {message: CreateOfferValidationMessage.images.length})
-  public images: string[];
+  @ArrayMaxSize(6, {message: CreateOfferValidationMessage.images.length})
+  @ArrayMinSize(6, {message: CreateOfferValidationMessage.images.length})
+  @IsOptional()
+  public images?: string[];
 
   @IsBoolean({message: CreateOfferValidationMessage.isPremium.invalidFormat})
   public isPremium: boolean;
@@ -49,10 +51,11 @@ export class CreateOfferDto {
   @IsEnum(Good, { each: true, message: CreateOfferValidationMessage.type.invalid })
   public goods: Good[];
 
+  @IsMongoId({ message: CreateOfferValidationMessage.host.invalidId })
   public host: string;
 
   @IsArray({ message: CreateOfferValidationMessage.location.invalidFormat })
-  @IsInt({ each: true, message: CreateOfferValidationMessage.location.invalidFormat })
-  @Length(2, 2, {message: CreateOfferValidationMessage.location.length})
+  @ArrayMaxSize(2, {message: CreateOfferValidationMessage.location.length})
+  @ArrayMinSize(2, {message: CreateOfferValidationMessage.location.length})
   public location: [number, number];
 }

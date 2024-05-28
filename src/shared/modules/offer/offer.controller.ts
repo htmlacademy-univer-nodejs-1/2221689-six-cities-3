@@ -14,6 +14,11 @@ import { UpdateOfferDto } from './dto/update-offer.dto.js';
 import { CommentService } from '../comment/comment-service.interface.js';
 import { CommentRdo } from '../comment/index.js';
 import { CreateOfferDto } from './dto/create-offer.dto.js';
+import { ParamEditFavoriteOffer } from './types/params-edit-favorite-offer.js';
+import { UserService } from '../user/user-service.interface.js';
+import { DocumentType } from '@typegoose/typegoose';
+import { OfferEntity } from './offer.entity.js';
+
 
 @injectable()
 export class OfferController extends BaseController {
@@ -21,6 +26,7 @@ export class OfferController extends BaseController {
     @inject(Component.Logger) protected readonly logger: Logger,
     @inject(Component.OfferService) private readonly offerService: OfferService,
     @inject(Component.CommentService) private readonly commentService: CommentService,
+    @inject(Component.UserService) private readonly userService: UserService,
   ) {
     super(logger);
 
@@ -76,19 +82,9 @@ export class OfferController extends BaseController {
       ]
     });
     this.addRoute({
-      path: '/favorite/:offerId',
+      path: '/favorite/:offerId/:status',
       method: HttpMethod.Post,
-      handler: this.addFavorite,
-      middlewares: [
-        new PrivateRouteMiddleware(),
-        new ValidateObjectIdMiddleware('offerId'),
-        new DocumentExistsMiddleware(this.offerService, 'Offer', 'offerId')
-      ]
-    });
-    this.addRoute({
-      path: '/favorite/:offerId',
-      method: HttpMethod.Delete,
-      handler: this.deleteFavorite,
+      handler: this.editFavorite,
       middlewares: [
         new PrivateRouteMiddleware(),
         new ValidateObjectIdMiddleware('offerId'),
@@ -106,12 +102,17 @@ export class OfferController extends BaseController {
     });
   }
 
-  public async index({ query, tokenPayload } : Request<unknown, unknown, unknown, RequestQuery>, res: Response): Promise<void> {
+  public async index({ query, tokenPayload }: Request<unknown, unknown, unknown, RequestQuery>, res: Response): Promise<void> {
     const offers = await this.offerService.find(query.limit);
-    if (!tokenPayload) {
-      offers.map((offer) => {
-        offer.isFavorite = false;
-      });
+    if (tokenPayload) {
+      const user = await this.userService.findById(tokenPayload.id);
+      if (user) {
+        offers.map((offer) => {
+          if (user.favoritesOffers.includes(offer.id)) {
+            offer.isFavorite = true;
+          }
+        });
+      }
     }
     const responseData = fillDTO(OfferRdo, offers);
     this.ok(res, responseData);
@@ -121,30 +122,77 @@ export class OfferController extends BaseController {
     { body, tokenPayload }: CreateOfferRequest,
     res: Response
   ): Promise<void> {
+    if (!tokenPayload) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'User not authorized',
+        'OfferController'
+      );
+    }
     const result = await this.offerService.create({ ...body, host: tokenPayload.id });
     const offer = await this.offerService.findById(result.id);
     this.created(res, fillDTO(FullOfferRdo, offer));
   }
 
-  public async show({ params }: Request<ParamOfferId>, res: Response): Promise<void> {
+  public async show({ params, tokenPayload }: Request<ParamOfferId>, res: Response): Promise<void> {
     const { offerId } = params;
     const offer = await this.offerService.findById(offerId);
+    if (tokenPayload) {
+      const user = await this.userService.findById(tokenPayload.id);
+      if (user && offer && user.favoritesOffers.includes(offerId)) {
+        offer.isFavorite = true;
+      }
+    }
     this.ok(res, fillDTO(FullOfferRdo, offer));
   }
 
-  public async update({ body, params }: Request<ParamOfferId, unknown, UpdateOfferDto>, res: Response): Promise<void> {
+  public async update({ body, params, tokenPayload }: Request<ParamOfferId, unknown, UpdateOfferDto>, res: Response): Promise<void> {
+    if (!tokenPayload) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'User not authorized',
+        'OfferController'
+      );
+    }
+    const offer = await this.offerService.findById(params.offerId);
+    if (offer && tokenPayload.id !== offer.host.id) {
+      throw new HttpError(
+        StatusCodes.FORBIDDEN,
+        'User has not rigths to update this offer',
+        'OfferController'
+      );
+    }
     const updatedOffer = await this.offerService.updateById(params.offerId, body);
+    const user = await this.userService.findById(tokenPayload.id);
+    if (user && updatedOffer && user.favoritesOffers.includes(updatedOffer.id)) {
+      updatedOffer.isFavorite = true;
+    }
     this.ok(res, fillDTO(FullOfferRdo, updatedOffer));
   }
 
-  public async delete({ params }: Request<ParamOfferId>, res: Response): Promise<void> {
+  public async delete({ params, tokenPayload }: Request<ParamOfferId>, res: Response): Promise<void> {
+    if (!tokenPayload) {
+      throw new HttpError(
+        StatusCodes.UNAUTHORIZED,
+        'User not authorized',
+        'OfferController'
+      );
+    }
+    const offer = await this.offerService.findById(params.offerId);
+    if (offer && tokenPayload.id !== offer.host.id) {
+      throw new HttpError(
+        StatusCodes.FORBIDDEN,
+        'User has not rigths to delete this offer',
+        'OfferController'
+      );
+    }
     const { offerId } = params;
-    const offer = await this.offerService.deleteById(offerId);
+    const deletedOffer = await this.offerService.deleteById(offerId);
     await this.commentService.deleteByOfferId(offerId);
-    this.noContent(res, offer);
+    this.noContent(res, deletedOffer);
   }
 
-  public async getPremium({ query } : Request<unknown, unknown, unknown, RequestQuery>, res: Response): Promise<void> {
+  public async getPremium({ query, tokenPayload }: Request<unknown, unknown, unknown, RequestQuery>, res: Response): Promise<void> {
     if (!query.city) {
       throw new HttpError(
         StatusCodes.BAD_REQUEST,
@@ -153,24 +201,55 @@ export class OfferController extends BaseController {
       );
     }
     const offers = await this.offerService.findPremium(query.city);
+    if (tokenPayload) {
+      const user = await this.userService.findById(tokenPayload.id);
+      if (user) {
+        offers.map((offer) => {
+          if (user.favoritesOffers.includes(offer.id)) {
+            offer.isFavorite = true;
+          }
+        });
+      }
+    }
     this.ok(res, fillDTO(OfferRdo, offers));
   }
 
-  public async getFavorite(_req: Request, _res: Response): Promise<void> {
-    const favoriteOffers = await this.offerService.findFavorite();
+  public async getFavorite({ tokenPayload }: Request, _res: Response): Promise<void> {
+    const offers = await this.offerService.find();
+    const favoriteOffers: DocumentType<OfferEntity>[] = [];
+    if (tokenPayload) {
+      const user = await this.userService.findById(tokenPayload.id);
+      if (user) {
+        for (let i = 0; i < offers.length; i++) {
+          if (user.favoritesOffers.includes(offers[i].id)) {
+            offers[i].isFavorite = true;
+            favoriteOffers.push(offers[i]);
+          }
+        }
+      }
+    }
     this.ok(_res, fillDTO(OfferRdo, favoriteOffers));
   }
 
-  public async addFavorite({ params }: Request<ParamOfferId>, res: Response): Promise<void> {
-    const { offerId } = params;
-    const offer = await this.offerService.addFavoriteById(offerId);
-    this.ok(res, fillDTO(FullOfferRdo, offer));
-  }
+  public async editFavorite({ params, tokenPayload }: Request<ParamEditFavoriteOffer>, res: Response): Promise<void> {
+    const { offerId, status } = params;
+    if (tokenPayload) {
+      const user = await this.userService.findById(tokenPayload.id);
+      const offer = await this.offerService.findById(offerId);
+      if (offer) {
+        offer.isFavorite = Boolean(Number(status));
+      }
+      if (user) {
+        if (Number(status)) {
+          user.favoritesOffers.push(offerId);
+        } else {
+          user.favoritesOffers = user.favoritesOffers.filter((favoriteOfferId) => offerId !== favoriteOfferId);
+        }
+        await this.userService.updateById(user.id, { favoritesOffers: user.favoritesOffers });
+      }
+      this.ok(res, fillDTO(FullOfferRdo, offer));
+    }
 
-  public async deleteFavorite({ params }: Request<ParamOfferId>, res: Response): Promise<void> {
-    const { offerId } = params;
-    const offer = await this.offerService.deleteFavoriteById(offerId);
-    this.ok(res, fillDTO(FullOfferRdo, offer));
   }
 
   public async getComments({ params }: Request<ParamOfferId>, res: Response): Promise<void> {

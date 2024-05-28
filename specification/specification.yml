@@ -35,10 +35,12 @@ paths:
           content:
             application/json:
               schema:
-                properties:
-                  id:
-                    type: string
-                    example: "123ewaxs243qfvsd"
+                allOf:
+                  - $ref: "#/components/schemas/user"
+                  - properties:
+                      id:
+                        type: string
+                        example: "123ewaxs243qfvsd"
         "400":
           description: Неправильный запрос.
         "409":
@@ -97,7 +99,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/user"
+                allOf:
+                  - $ref: "#/components/schemas/user"
+                  - properties:
+                      token:
+                        type: string
         "400":
           description: Неправильный запрос.
         "401":
@@ -112,6 +118,8 @@ paths:
       summary: Загрузить изображение аватара
       description: Загружает изображение аватара пользователя. Изображение
         аватара должно быть в формате `png` или `jpg`.
+      security:
+        - bearerAuth: []
       parameters:
         - name: userId
           in: path
@@ -127,8 +135,8 @@ paths:
                 - avatar
               properties:
                 avatarUrl:
-                  type: array
-                  items: {}
+                  type: string
+                  example: picture.jpg
       responses:
         '200':
           description: OK
@@ -143,6 +151,8 @@ paths:
         - users
       summary: Завершение сеанса
       description: Осуществляет завершение пользовательского сеанса
+      security:
+        - bearerAuth: []
       requestBody:
         description: Токен для завершения сеанса пользователя.
         content:
@@ -181,7 +191,8 @@ paths:
         - offers
       summary: Создание предложения об аренде
       description: Создает предложение об аренде
-
+      security:
+        - bearerAuth: []
       requestBody:
         description: Информация для создания нового предложения об аренде.
         content:
@@ -196,12 +207,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - properties:
-                      id:
-                        type: string
-                        example: "123ewaxs243qfvsd"
-                  - $ref: "#/components/schemas/fullOffer"
+                $ref: "#/components/schemas/fullOffer"
         "400":
           description: Неправильный запрос.
         "500":
@@ -225,14 +231,7 @@ paths:
           content:
             application/json:
               schema:
-                required:
-                  - id
-                allOf:
-                  - properties:
-                      id:
-                        type: string
-                        example: "123ewaxs243qfvsd"
-                  - $ref: "#/components/schemas/fullOffer"    
+                $ref: "#/components/schemas/fullOffer"    
         "400":
           description: Неправильный запрос.
         "500":
@@ -254,14 +253,7 @@ paths:
         content:
           application/json:
             schema:
-              required:
-                  - id
-              allOf:
-                - $ref: "#/components/schemas/fullOffer"
-                - properties:
-                    id:
-                      type: string
-                      example: "123ewaxs243qfvsd"
+              $ref: "#/components/schemas/fullOffer"
         required: true
 
       responses:
@@ -270,12 +262,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - properties:
-                      id:
-                        type: string
-                        example: "123ewaxs243qfvsd"
-                  - $ref: "#/components/schemas/fullOffer"
+                $ref: "#/components/schemas/fullOffer"
         "400":
           description: Неправильный запрос.
         "500":
@@ -296,7 +283,7 @@ paths:
         "204":
           description: ОК
 
-  /premium?city={cityName}:
+  /premium?city={city}:
     get:
       tags:
         - offers
@@ -328,6 +315,8 @@ paths:
         - offers
       summary: Список избранных предложений
       description: Возвращает список избранных предложений по аренде
+      security:
+        - bearerAuth: []
       responses:
         "200":
           description: Избранные предложения по аренде
@@ -342,21 +331,26 @@ paths:
         "500":
           description: Внутренняя ошибка сервера.
 
-  /favorite/{offerId}:
+  /favorite/{offerId}/{status}:
     post:
       tags:
         - offers
-      summary: Добавление предложения в избранное
-      description: Добавляет в список избранных предложение по аренде
+      summary: Добавление/удаление предложения в избранное/из избранного
+      description: Добавляет/удаляет в список/из списка избранных предложение по аренде
       parameters:
         - name: offerId
           in: path
           required: true
           schema:
             type: string
+        - name: status
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         "201":
-          description: Предложение добавлено в избранное. Объект предложения.
+          description: Предложение добавлено/удалено в избранное/из избранного. Объект предложения.
           content:
             application/json:
               schema:
@@ -364,26 +358,7 @@ paths:
         "400":
           description: Неправильный запрос.
         "500":
-          description: Внутренняя ошибка сервера.
-    
-    delete:
-      tags:
-        - offers
-      summary: Удаление предложения по аренде из избранного
-      description: Осуществляет удаление предложения по аренде из избранного
-      parameters:
-        - name: offerId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: ОК
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/fullOffer" 
+          description: Внутренняя ошибка сервера. 
 
   /offers/{offerId}/comments:
     get:
@@ -428,16 +403,7 @@ paths:
         content:
           application/json:
             schema:
-              required:
-                - comment
-                - rating
-              properties:
-                comment: 
-                  type: string
-                  example: "Хорошо"
-                rating:
-                  type: number
-                  example: 7
+              $ref: "#/components/schemas/createComment"
         required: true
 
       responses:
@@ -446,14 +412,7 @@ paths:
           content:
             application/json:
               schema:
-                required:
-                  - id
-                allOf:
-                  - properties:
-                      id:
-                        type: string
-                        example: "123ewaxs243qfvsd"
-                  - $ref: "#/components/schemas/comment"    
+                $ref: "#/components/schemas/comment"    
         "400":
           description: Неправильный запрос.
         "500":
@@ -468,7 +427,7 @@ components:
         - pro
       example: pro
 
-    cityName:
+    city:
       type: string
       enum:
         - Paris
@@ -568,6 +527,7 @@ components:
       type: object
 
       required:
+        - id
         - title
         - description
         - city
@@ -583,8 +543,14 @@ components:
         - host
         - images
         - maxAdults
+        - createdAt
+        - commentsCount
 
       properties:
+        id:
+          type: string
+          example: 1367gsdbhvjkry73824
+
         title:
           type: string
           example: Солнченый бриз
@@ -593,7 +559,7 @@ components:
           type: string
           example: Солнченый бриз - лучшее место для отдыха
 
-        createdDate:
+        createdAt:
           type: string
           example: 2024-03-06T20:15:42.792Z
 
@@ -650,12 +616,15 @@ components:
           example: 7
 
         location:
-          $ref: "#/components/schemas/location"
-
+          type: array
+          items:
+            type: number
+          example: [80.655889, 69.7678954]
     offer:
       type: object
 
       required:
+        - id
         - title
         - city
         - price
@@ -664,14 +633,18 @@ components:
         - isFavorite
         - previewImage
         - type
-        - date
+        - createdAt
 
       properties:
+        id:
+          type: string
+          example: 1367gsdbhvjkry73824
+
         title:
           type: string
           example: Солнченый бриз
 
-        createdDate:
+        createdAt:
           type: string
           example: 2024-03-06T20:15:42.792Z
 
@@ -763,7 +736,10 @@ components:
             $ref: "#/components/schemas/goods"
 
         location:
-          $ref: "#/components/schemas/location"
+          type: array
+          items:
+            type: number
+          example: [80.655889, 69.7678954]
 
         images: 
           type: array
@@ -771,21 +747,53 @@ components:
             type: string
           example: [apartments-1.jpg, apartments-2.jpg]
 
-    comment:
+    createComment:
       type: object
 
       required:
         - comment
-        - date
         - rating
-        - user
-
+        - userId
+        - offerId
+      
       properties:
         comment:
           type: string
           example: "Good hotel"
 
-        date:
+        rating:
+          type: number
+          example: 2
+
+        offerId:
+          type: string
+          example: tyefgbhwej1223dj21e2fwea
+
+        userId:
+          type: string
+          example: tyefgbhwej1223dj
+
+    comment:
+      type: object
+
+      required:
+        - id
+        - comment
+        - postDate
+        - rating
+        - userId
+        - offerId
+
+      properties:
+        id: 
+          type: string
+          example: tyefgbhwej1223dj21e2fwea
+
+        comment:
+          type: string
+          example: "Good hotel"
+
+        postDate:
           type: string
           example: 2024-03-06T20:15:42.792Z
 
@@ -793,27 +801,19 @@ components:
           type: number
           example: 2
 
-        user:
-          $ref: "#/components/schemas/user"
+        offerId:
+          type: string
+          example: tyefgbhwej1223dj21e2fwea
 
-    city:
-      type: object
-      properties:
-          name: 
-            $ref: "#/components/schemas/cityName"
+        userId:
+          type: string
+          example: tyefgbhwej1223dj
 
-          location:
-            $ref: "#/components/schemas/location"
-
-    location:
-      type: object
-      properties:
-        latitude: 
-          type: number
-          example: 48.85661
-
-        longitude:
-          type: number
-          example: 2.351499
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: jwt
+      description: User Token
         
 
