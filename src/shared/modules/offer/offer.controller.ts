@@ -9,7 +9,7 @@ import { OfferRdo } from './rdo/offer.rdo.js';
 import { FullOfferRdo } from './rdo/full-offer.rdo.js';
 import { CreateOfferRequest } from './types/create-offer-request.type.js';
 import { StatusCodes } from 'http-status-codes';
-import { ParamOfferId } from './types/param-offerid.type.js';
+import { ParamOfferId } from './types/param-offer-id.type.js';
 import { UpdateOfferDto } from './dto/update-offer.dto.js';
 import { CommentService } from '../comment/comment-service.interface.js';
 import { CommentRdo } from '../comment/index.js';
@@ -92,7 +92,7 @@ export class OfferController extends BaseController {
       ]
     });
     this.addRoute({
-      path: '/offers/:offerId/comments',
+      path: '/comments/:offerId',
       method: HttpMethod.Get,
       handler: this.getComments,
       middlewares: [
@@ -108,7 +108,7 @@ export class OfferController extends BaseController {
       const user = await this.userService.findById(tokenPayload.id);
       if (user) {
         offers.map((offer) => {
-          if (user.favoritesOffers.includes(offer.id)) {
+          if (user.favoriteOffers.includes(offer.id)) {
             offer.isFavorite = true;
           }
         });
@@ -139,7 +139,7 @@ export class OfferController extends BaseController {
     const offer = await this.offerService.findById(offerId);
     if (tokenPayload) {
       const user = await this.userService.findById(tokenPayload.id);
-      if (user && offer && user.favoritesOffers.includes(offerId)) {
+      if (user && offer && user.favoriteOffers.includes(offerId)) {
         offer.isFavorite = true;
       }
     }
@@ -164,7 +164,7 @@ export class OfferController extends BaseController {
     }
     const updatedOffer = await this.offerService.updateById(params.offerId, body);
     const user = await this.userService.findById(tokenPayload.id);
-    if (user && updatedOffer && user.favoritesOffers.includes(updatedOffer.id)) {
+    if (user && updatedOffer && user.favoriteOffers.includes(updatedOffer.id)) {
       updatedOffer.isFavorite = true;
     }
     this.ok(res, fillDTO(FullOfferRdo, updatedOffer));
@@ -205,7 +205,7 @@ export class OfferController extends BaseController {
       const user = await this.userService.findById(tokenPayload.id);
       if (user) {
         offers.map((offer) => {
-          if (user.favoritesOffers.includes(offer.id)) {
+          if (user.favoriteOffers.includes(offer.id)) {
             offer.isFavorite = true;
           }
         });
@@ -221,7 +221,7 @@ export class OfferController extends BaseController {
       const user = await this.userService.findById(tokenPayload.id);
       if (user) {
         for (let i = 0; i < offers.length; i++) {
-          if (user.favoritesOffers.includes(offers[i].id)) {
+          if (user.favoriteOffers.includes(offers[i].id)) {
             offers[i].isFavorite = true;
             favoriteOffers.push(offers[i]);
           }
@@ -241,11 +241,11 @@ export class OfferController extends BaseController {
       }
       if (user) {
         if (Number(status)) {
-          user.favoritesOffers.push(offerId);
+          user.favoriteOffers.push(offerId);
         } else {
-          user.favoritesOffers = user.favoritesOffers.filter((favoriteOfferId) => offerId !== favoriteOfferId);
+          user.favoriteOffers = user.favoriteOffers.filter((favoriteOfferId) => offerId !== favoriteOfferId);
         }
-        await this.userService.updateById(user.id, { favoritesOffers: user.favoritesOffers });
+        await this.userService.updateById(user.id, { favoriteOffers: user.favoriteOffers });
       }
       this.ok(res, fillDTO(FullOfferRdo, offer));
     }

@@ -62,7 +62,7 @@ paths:
               $ref: "#/components/schemas/loginUser"
         required: true
       responses:
-        "201":
+        "200":
           description: Пользователь авторизован. Объект пользователя.
           content:
             application/json:
@@ -74,8 +74,6 @@ paths:
                         type: string
         "400":
           description: Неправильный запрос.
-        "401":
-          description: Логин или пароль неверный или пользователь не существует.
         "500":
           description: Внутренняя ошибка сервера.
 
@@ -84,17 +82,14 @@ paths:
         - users
       summary: Проверка состояния пользователя
       description: Возвращает информацию по авторизованному пользователю
-      requestBody:
-        description: Токен для проверки авторизации пользователя.
-        content:
-          application/json:
-            schema:
-              properties:
-                token:
-                  type: string
-        required: true
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+            pattern: ^Bearer\s
       responses:
-        "201":
+        "200":
           description: Пользователь авторизован. Объект пользователя.
           content:
             application/json:
@@ -118,8 +113,6 @@ paths:
       summary: Загрузить изображение аватара
       description: Загружает изображение аватара пользователя. Изображение
         аватара должно быть в формате `png` или `jpg`.
-      security:
-        - bearerAuth: []
       parameters:
         - name: userId
           in: path
@@ -138,12 +131,14 @@ paths:
                   type: string
                   example: picture.jpg
       responses:
-        '200':
+        "201":
           description: OK
-        '400':
+        "400":
           description: Неправильный запрос.
-        '401':
-          description: Пользователь не авторизован.
+        "404":
+          description: Пользователь не найден.
+        "500":
+          description: Внутренняя ошибка сервера.
 
   /logout:
     delete:
@@ -165,6 +160,10 @@ paths:
       responses:
         "204":
           description: ОК
+        "400":
+          description: Неверный токен.
+        "500":
+          description: Внутренняя ошибка сервера.
 
   /offers:
     get:
@@ -181,8 +180,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/offer"
-        "400":
-          description: Неправильный запрос.
         "500":
           description: Внутренняя ошибка сервера.
 
@@ -210,6 +207,8 @@ paths:
                 $ref: "#/components/schemas/fullOffer"
         "400":
           description: Неправильный запрос.
+        "401":
+          description: Пользователь не авторизован.
         "500":
           description: Внутренняя ошибка сервера.
 
@@ -231,9 +230,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/fullOffer"    
+                $ref: "#/components/schemas/fullOffer"
         "400":
-          description: Неправильный запрос.
+          description: Неправильный запрос.    
+        "404":
+          description: Оффер не найден.
         "500":
           description: Внутренняя ошибка сервера.
 
@@ -265,6 +266,10 @@ paths:
                 $ref: "#/components/schemas/fullOffer"
         "400":
           description: Неправильный запрос.
+        "401":
+          description: Пользователь не авторизован.
+        "403":
+          description: Доступ к редактированию запрещен.
         "500":
           description: Внутренняя ошибка сервера.
 
@@ -282,6 +287,14 @@ paths:
       responses:
         "204":
           description: ОК
+        "400":
+          description: Неправильный запрос.
+        "401":
+          description: Пользователь не авторизован.
+        "403":
+          description: Доступ к удалению запрещен.
+        "500":
+          description: Внутренняя ошибка сервера.
 
   /premium?city={city}:
     get:
@@ -326,8 +339,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/offer"    
-        "400":
-          description: Неправильный запрос.
+        "401":
+          description: Пользователь не авторизован.
         "500":
           description: Внутренняя ошибка сервера.
 
@@ -349,7 +362,7 @@ paths:
           schema:
             type: string
       responses:
-        "201":
+        "200":
           description: Предложение добавлено/удалено в избранное/из избранного. Объект предложения.
           content:
             application/json:
@@ -357,10 +370,12 @@ paths:
                 $ref: "#/components/schemas/fullOffer"    
         "400":
           description: Неправильный запрос.
+        "401":
+          description: Пользователь не авторизован.
         "500":
           description: Внутренняя ошибка сервера. 
 
-  /offers/{offerId}/comments:
+  /comments/{offerId}:
     get:
       tags:
         - comments
@@ -415,6 +430,8 @@ paths:
                 $ref: "#/components/schemas/comment"    
         "400":
           description: Неправильный запрос.
+        "401":
+          description: Пользователь не авторизован.
         "500":
           description: Внутренняя ошибка сервера.
 
@@ -781,7 +798,7 @@ components:
         - comment
         - postDate
         - rating
-        - userId
+        - host
         - offerId
 
       properties:
@@ -805,7 +822,7 @@ components:
           type: string
           example: tyefgbhwej1223dj21e2fwea
 
-        userId:
+        host:
           type: string
           example: tyefgbhwej1223dj
 
