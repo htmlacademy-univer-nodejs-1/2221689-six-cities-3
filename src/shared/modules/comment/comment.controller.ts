@@ -55,9 +55,17 @@ export default class CommentController extends BaseController {
       );
     }
 
-    const comment = await this.commentService.create(offerId, { ...body, userId: tokenPayload.id });
+    if (offerId !== body.offerId) {
+      throw new HttpError(
+        StatusCodes.BAD_REQUEST,
+        `Offers ${offerId} and ${body.offerId} not equals.`,
+        'CommentController'
+      );
+    }
+
+    const comment = await this.commentService.create({ ...body, userId: tokenPayload.id });
     await this.offerService.incCommentCount(offerId);
-    // await this.offerService.updateRating(offerId);
+    await this.offerService.updateRating(offerId);
     this.created(res, fillDTO(CommentRdo, comment));
   }
 }
