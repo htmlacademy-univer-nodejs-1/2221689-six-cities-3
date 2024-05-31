@@ -10,5 +10,5 @@ export class UpdateUserDto {
   public name?: string;
 
   @IsOptional()
-  public favoritesOffers?: string[];
+  public favoriteOffers?: string[];
 }
